@@ -17,43 +17,31 @@ import laspy
 import numpy as np
 import glob
 import pathlib
-# from sklearn.neighbors import KDTree
 import geopandas as gpd
-# import cv2 as cv
-import matplotlib.pyplot as plt
-
 from scipy import stats
 from scipy import ndimage
 from scipy import spatial
-
 import open3d as o3d
 import faiss
-
-from skimage.morphology import reconstruction
-import skimage.measure
-
 import rasterio
 from rasterio.transform import Affine
-
 import pykdtree.kdtree as pykdt
+# from sklearn.neighbors import KDTree
+# import cv2 as cv
+# import matplotlib.pyplot as plt
+# from skimage.morphology import reconstruction
+# import skimage.measure
 
 #%% parameters
 
+# directories/files
 tile_index = 'D:/Projects/intemperie_cdf_20230724/LIDAR/LAS/tileindex_500m.shp'
-
-fpath = 'D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/corrected/LCDF_LV95_NF02_000048.las'
-fpath_ref = 'D:/Projects/intemperie_cdf_20230724/LIDAR/LAS/2022/LCDF_LV95_NF02_000048.las'
-
-fpath_las_out = 'D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/change_detection/LCDF_LV95_NF02_000048_change.las'
-
-target_classes = [2,3,4,5,31]
-
-
 dir_in = 'D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/corrected/*.las'
 dir_ref_in = 'D:/Projects/intemperie_cdf_20230724/LIDAR/LAS/2022/'
 dir_out = 'D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/change_detection/'
 
-
+# processing
+target_classes = [2,3,4,5,31]
 d_max = 1.5
 
 
@@ -321,70 +309,3 @@ tic = time.perf_counter()
 [knn_dist3, knn_ind3, _] = pcd_tree.search_knn_vector_3d(np.asarray(pcd.points), 1)
 toc = time.perf_counter()
 print(f"Elapsed time {toc - tic:0.4f} seconds")
-
-
-
-
-#%% change detection function
-
-def find_change(xyz, xyz_ref, d_max):
-    
-    #find k nearest neighbours
-
-    # build KDTree
-    # tree = KDTree(xyz_ref[idxl_target,:], leaf_size=2)
-    tree = KDTree(xyz, leaf_size=2)
-    
-    # find neighbours
-    knn_dist, knn_ind = tree.query(xyz_ref, k=1)
-    # knn_class = pc_ref.classification[knn_ind]
-    
-    # assign change flag=1 to points beyond max range
-    return knn_dist[:,0] > d_max
-
-
-
-
-bibi = points_gpd.within(tiles)
-
-
-# point in polygon
-target_tile = gpd.sjoin(points_gpd, tiles, how='left', predicate='within')
-
-
-tiles_s = gpd.overlay(tiles, points_gpd, how='intersection', keep_geom_type=None, make_valid=True)
-
-target_tile = gpd.sjoin(tiles, points_gpd, how='left', predicate='contains')
-
-
-
-
-
-ind_target = target_tile.index_right
-
-
-idxl_in = tiles.contains(points_gpd)
-
-
-
-target_tile.tileid
-feature = target_tile
-
-feature.geometry
-
-feature.geometry.exterior.coords.xy
-feature.geometry.xy
-
-
-
-
-g[0].exterior.coords.xy
-
-
-coords = np.array(feature[0]['geometry']['coordinates'])
-
-
-feature
-
-print("Processing tile %u / %u: %s" % (index+1, n_tiles, feature.tileid))
-    
