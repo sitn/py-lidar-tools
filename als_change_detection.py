@@ -45,7 +45,7 @@ target_classes = [2,3,4,5,31]
 d_max = 1.5
 
 
-#%% change detection
+#%% change detection in point cloud
 
 files_in = glob.glob(dir_in)
 
@@ -61,10 +61,6 @@ for index, fpath in enumerate(files_in):
 
     print("***********************************************")
     print("Processing file %u / %u: %s" % (index+1, n, fpath))
-    
-    #os.path.isfile('D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/corrected\LCDF_LV95_NF02_000027.las')
-    #os.path.isfile(files_in[0])
-    #print("fpath %s" % (fpath))
     
     if not os.path.isfile(fpath):
         print("File not found, skipping to next iteration")
@@ -116,13 +112,12 @@ for index, fpath in enumerate(files_in):
     las.write(fpath_las_out)
 
 
-#%% tile index
+#%% rasterize point clouds
 
 tiles = gpd.read_file('D:/Projects/intemperie_cdf_20230724/LIDAR/LAS/tileindex_500m.shp', crs='epsg:2056')
 files_in = glob.glob('D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/change_detection/*.las')
 
 del files_in[0] 
-
 
 # fpath = 'D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/change_detection/LCDF_LV95_NF02_000011_change.las'
 
@@ -172,13 +167,8 @@ for index, fpath in enumerate(files_in):
     # mask = npoints.astype(np.uint8)
 
     #%% morphological opening
-    # kernel = np.ones((3,3), np.uint8)
-    # kernel = cv.getStructuringElement(shape=cv.MORPH_RECT, ksize=(5, 5))
+
     kernel = np.ones((3,3), bool)
-    
-    #mask = cv.morphologyEx(npoints.astype(np.uint8), cv.MORPH_OPEN, kernel) > 0
-    #mask = mask.astype(np.uint8)
-    # imgplot = plt.imshow(npoints)
     
     # mask = ndimage.binary_opening(npoints, structure=kernel, iterations=1, output=None, origin=0, mask=None, border_value=0, brute_force=False)
     # imgplot = plt.imshow(mask)
@@ -192,11 +182,9 @@ for index, fpath in enumerate(files_in):
     
     #np.count_nonzero(mask)
     
+    # plot
     #imgplot = plt.imshow(seeds)
     #imgplot = plt.imshow(mask)
-    
-    # skimage.morphology.reconstruction(seed, mask, method='erosion', footprint=None, offset=None)
-    
     
     #%% export to geotiff
         
