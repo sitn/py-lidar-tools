@@ -61,7 +61,7 @@ d_max = 1.5
 
 files_in = glob.glob(dir_in)
 
-del files_in[0] 
+# del files_in[0] 
 
 # files_in = ['D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/corrected/LCDF_LV95_NF02_000011.las']
 # files_ref_in = glob.glob(dir_ref_in)
@@ -133,12 +133,16 @@ for index, fpath in enumerate(files_in):
 tiles = gpd.read_file('D:/Projects/intemperie_cdf_20230724/LIDAR/LAS/tileindex_500m.shp', crs='epsg:2056')
 files_in = glob.glob('D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/change_detection/*.las')
 
+del files_in[0] 
+
+
 # fpath = 'D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/change_detection/LCDF_LV95_NF02_000011_change.las'
 
 n = len(files_in)
 
 for index, fpath in enumerate(files_in):
     
+    print("***********************************************")
     print("Processing file %u / %u: %s" % (index+1, n, fpath))
     
     # read LAS files
@@ -153,6 +157,10 @@ for index, fpath in enumerate(files_in):
     
     feature = gpd.sjoin(tiles, points_gpd, predicate='contains')
 
+    if len(feature) == 0:
+        print("File not found, skipping to next iteration")
+        continue
+    
     #%% get tile bounding box
     bbox = feature.geometry.bounds
     x_min = bbox.minx.values[0]
