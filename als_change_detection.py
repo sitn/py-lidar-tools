@@ -2,7 +2,7 @@
 """
 Created on Tue Aug  8 09:37:40 2023
 
-@author: Matthew Parkan, SITN
+@author: Matthew Parkan, SITN, matthew.parkan@ne.ch
 """
 
 #%%  todo
@@ -66,7 +66,7 @@ for index, fpath in enumerate(files_in):
         print("File not found, skipping to next iteration")
         continue
     
-    #%% read LAS files
+    # read LAS files
     print("Reading %s" % (fpath))
     
     pc = laspy.read(fpath)
@@ -84,12 +84,8 @@ for index, fpath in enumerate(files_in):
     pc_ref = laspy.read(fpath_ref)
     xyz_ref = np.vstack((pc_ref.x, pc_ref.y, pc_ref.z)).transpose()
     
-    
-    #%% change detection
-    print("Building KDTree")
-    
     # build KDTree
-    # tree = spatial.KDTree(xyz, leafsize=24)
+    print("Building KDTree")
     tree = pykdt.KDTree(xyz, leafsize=24)
     
     # find neighbours
@@ -99,13 +95,11 @@ for index, fpath in enumerate(files_in):
     # assign change flag=1 to points beyond max range
     idxl_change = (knn_dist > d_max) & np.isin(pc_ref.classification, [4,5])
     idxl_target = np.isin(pc_ref.classification, target_classes)
-    
     pc_ref.points.classification[np.invert(idxl_change)] = 0
     pc_ref.points.classification[idxl_change] = 5
-    
     pc_ref.points.user_data = idxl_change.astype('uint8')
     
-    #%% write result to LAS file
+    # write result to LAS file
     fpath_las_out = dir_out + fname + '_change.las'
     print("Writing result to %s" % (fpath_las_out))
     las = laspy.LasData(header=pc_ref.header, points=pc_ref.points[idxl_target])
@@ -144,35 +138,29 @@ for index, fpath in enumerate(files_in):
         print("File not found, skipping to next iteration")
         continue
     
-    #%% get tile bounding box
+    # get tile bounding box
     bbox = feature.geometry.bounds
     x_min = bbox.minx.values[0]
     x_max = bbox.maxx.values[0]
     y_min = bbox.miny.values[0]
     y_max = bbox.maxy.values[0]
     
-    #%% create raster grid
+    # create raster grid
     res = 1
     xe = np.arange(x_min, x_max + res, res)
     ye = np.arange(y_min, y_max + res, res)
     transform_edges = Affine.translation(xe[0], ye[-1]) * Affine.scale(res, -res)
 
-    #%% rasterize
-    
-    # idxl_change = pc.classification == 5
+    # rasterize
     idxl_change = pc.user_data == 1
-    
     ret = stats.binned_statistic_2d(pc.x[idxl_change], pc.y[idxl_change], None, statistic='count', bins = [xe, ye], expand_binnumbers=True)
     npoints = np.uint32(np.rot90(ret.statistic)) > 20
     # mask = npoints.astype(np.uint8)
 
-    #%% morphological opening
-
+    # morphological filtering
     kernel = np.ones((3,3), bool)
-    
     # mask = ndimage.binary_opening(npoints, structure=kernel, iterations=1, output=None, origin=0, mask=None, border_value=0, brute_force=False)
     # imgplot = plt.imshow(mask)
-    
     # morphological erosion
     seeds = ndimage.binary_erosion(npoints, structure=kernel, iterations=1, mask=None, output=None, border_value=0, origin=0, brute_force=False)
     
@@ -186,8 +174,7 @@ for index, fpath in enumerate(files_in):
     #imgplot = plt.imshow(seeds)
     #imgplot = plt.imshow(mask)
     
-    #%% export to geotiff
-        
+    # export to geotiff 
     fout = rasterio.open(
             dir_out + feature.tileid.values[0] + '_change.tif',
             'w',
@@ -200,9 +187,11 @@ for index, fpath in enumerate(files_in):
             crs = 'EPSG:2056',
             transform = transform_edges,
         )
-        
     fout.write(mask, 1)
     fout.close()
+
+
+
 
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
