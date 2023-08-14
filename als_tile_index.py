@@ -42,8 +42,14 @@ import glob
 # path_in = r'D:/LiDAR/lidar2023GE/LAS_classifie/*.las'
 # path_out = D:/LiDAR/lidar2023GE/LAS_classifie/tile_index.shp'
 
-path_in = 'D:/Projects/intemperie_cdf_20230724/LIDAR/LAS/*.laz'
-path_out = 'D:/Projects/intemperie_cdf_20230724/LIDAR/LAS/LCDF_LV95_NF02_tile_index2.shp'
+# path_in = 'D:/Projects/intemperie_cdf_20230724/LIDAR/LAS/*.laz'
+# path_out = 'D:/Projects/intemperie_cdf_20230724/LIDAR/LAS/LCDF_LV95_NF02_tile_index2.shp'
+
+# path_in = 'D:/Projects/intemperie_cdf_20230724/data/pointclouds/livraison_20230810/*.laz'
+# path_out = 'D:/Projects/intemperie_cdf_20230724/data/pointclouds/livraison_20230810/LCDF_LV95_NF02_tile_index.shp'
+
+path_in = 'D:/Data/LiDAR/2023 - CDF/flai_classification_v1/corrected/*.las'
+path_out = 'D:/Data/LiDAR/2023 - CDF/flai_classification_v1/corrected/LCDF_LV95_NF02_tile_index.shp'
 
 
 #%% input files
@@ -51,15 +57,22 @@ path_out = 'D:/Projects/intemperie_cdf_20230724/LIDAR/LAS/LCDF_LV95_NF02_tile_in
 # LL = 2544750.000, 1211800.000
 
 
-files = glob.glob(path_in)
+files_in = glob.glob(path_in)
 
 gdf = gpd.GeoDataFrame() 
 
-for fpath in files:
+n = len(files_in)
 
-    print("Processing file: %s" % fpath)
+for index, fpath in enumerate(files_in):
     
-    pc = laspy.read(fpath)
+    print("***********************************************")
+    print("Processing file %u / %u: %s" % (index+1, n, fpath))
+    
+    try:
+      pc = laspy.read(fpath)
+    except:
+      print("Error when reading file. Skipping to next.")
+      continue
     
     # file name
     fname = Path(fpath).stem
@@ -73,8 +86,8 @@ for fpath in files:
     y_bbox = np.array([pc.header.y_max, pc.header.y_max, pc.header.y_min, pc.header.y_min, pc.header.y_max])
     
     # scale, round, unscale
-    x_bbox = np.round(x_bbox / 500.0) * 500.0
-    y_bbox = np.round(y_bbox / 500.0) * 500.0
+    # x_bbox = np.round(x_bbox / 500.0) * 500.0
+    # y_bbox = np.round(y_bbox / 500.0) * 500.0
 
     polygon_geom = Polygon(zip(x_bbox, y_bbox))
     polygon = gpd.GeoDataFrame(df, crs='epsg:2056', geometry=[polygon_geom]) 
