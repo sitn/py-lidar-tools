@@ -48,14 +48,15 @@ import glob
 # path_in = 'D:/Projects/intemperie_cdf_20230724/data/pointclouds/livraison_20230810/*.laz'
 # path_out = 'D:/Projects/intemperie_cdf_20230724/data/pointclouds/livraison_20230810/LCDF_LV95_NF02_tile_index.shp'
 
-path_in = 'D:/Data/LiDAR/2023 - CDF/flai_classification_v1/corrected/*.las'
-path_out = 'D:/Data/LiDAR/2023 - CDF/flai_classification_v1/corrected/LCDF_LV95_NF02_tile_index.shp'
+# path_in = 'D:/Data/LiDAR/2023 - CDF/flai_classification_v1/corrected/*.las'
+# path_out = 'D:/Data/LiDAR/2023 - CDF/flai_classification_v1/corrected/LCDF_LV95_NF02_tile_index.shp'
+
+
+path_in = 'D:/Projects/intemperie_cdf_20230724/data/pointclouds/Flight_1_Geospatial_predict_all_classes_Flai_v2/*.laz'
+path_out = 'D:/Projects/intemperie_cdf_20230724/data/pointclouds/Flight_1_Geospatial_predict_all_classes_Flai_v2/tile_index.shp'
 
 
 #%% input files
-
-# LL = 2544750.000, 1211800.000
-
 
 files_in = glob.glob(path_in)
 
