@@ -35,27 +35,49 @@ import pykdtree.kdtree as pykdt
 #%% parameters
 
 # directories/files
-tile_index = 'D:/Projects/intemperie_cdf_20230724/LIDAR/LAS/tileindex_500m.shp'
-dir_in = 'D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/corrected/*.las'
-dir_ref_in = 'D:/Projects/intemperie_cdf_20230724/LIDAR/LAS/2022/'
-dir_out = 'D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/change_detection/'
+# tile_index = 'D:/Projects/intemperie_cdf_20230724/LIDAR/LAS/tileindex_500m.shp'
+# dir_in = 'D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/corrected/*.las'
+# dir_ref_in = 'D:/Projects/intemperie_cdf_20230724/LIDAR/LAS/2022/'
+# dir_out = 'D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/change_detection/'
+
+
+# directories/files
+tile_index = 'D:/Projects/intemperie_cdf_20230724/grid/tuiles_lidar_2022.shp'
+dir_in = 'D:/Projects/intemperie_cdf_20230724/data/pointclouds/Flight_1_Geospatial_predict_all_classes_Flai_v2/*.laz'
+dir_ref_in = 'D:/Data/LiDAR/2022/'
+dir_out = 'D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/change_detection/v2/'
 
 # processing
 target_classes = [2,3,4,5,31]
 d_max = 1.5
 
 
+
+# pc1 = laspy.read('D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/change_detection/v2/2545000_1211500_change.las')
+# pc1.distance              
+
+# pc2 = laspy.read('D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/change_detection/v3/2544500_1211500_change.laz')
+# pc2.distance         
+   
+
+
 #%% change detection in point cloud
+
 
 files_in = glob.glob(dir_in)
 
-# del files_in[0] 
 
+# fpath = files_in[42]
+
+# del files_in[0] 
 # files_in = ['D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/corrected/LCDF_LV95_NF02_000011.las']
 # files_ref_in = glob.glob(dir_ref_in)
 # files_out = glob.glob(dir_out + '/*.las')
 
 n = len(files_in)
+
+# tiles_s = gpd.overlay(tiles, clipper, how='intersection', keep_geom_type=None, make_valid=True)
+tiles = gpd.read_file(tile_index, crs='epsg:2056')
     
 for index, fpath in enumerate(files_in):
 
@@ -70,11 +92,26 @@ for index, fpath in enumerate(files_in):
     print("Reading %s" % (fpath))
     
     pc = laspy.read(fpath)
+    
+    # tile center
+    x_c = (pc.header.x_min + pc.header.x_max) / 2
+    y_c = (pc.header.y_min + pc.header.y_max) / 2
+
+    # match tile
+    points_gpd = gpd.GeoDataFrame(geometry=gpd.points_from_xy([x_c], [y_c]), crs='epsg:2056') 
+    
+    feature = gpd.sjoin(tiles, points_gpd, predicate='contains')
+
+    if len(feature) == 0:
+        print("Reference file not found, skipping to next iteration")
+        continue
+    
     xyz = np.vstack((pc.x, pc.y, pc.z)).transpose()
     
     # fname = os.path.basename(fpath)
-    fname = pathlib.Path(fpath).stem
-    fpath_ref = dir_ref_in + fname + '.las'
+    # fname = pathlib.Path(fpath).stem
+    fname = feature.tileid.values[0]
+    fpath_ref = dir_ref_in + fname + '.copc.laz'
     
     if not os.path.isfile(fpath_ref):
         print("File not found, skipping to next iteration")
@@ -95,20 +132,62 @@ for index, fpath in enumerate(files_in):
     # assign change flag=1 to points beyond max range
     idxl_change = (knn_dist > d_max) & np.isin(pc_ref.classification, [4,5])
     idxl_target = np.isin(pc_ref.classification, target_classes)
-    pc_ref.points.classification[np.invert(idxl_change)] = 0
-    pc_ref.points.classification[idxl_change] = 5
-    pc_ref.points.user_data = idxl_change.astype('uint8')
+    
+    # pc_ref.points.classification[np.invert(idxl_change)] = 0
+    # pc_ref.points.classification[idxl_change] = 5
+    # pc_ref.points.user_data = idxl_change.astype('uint8')
     
     # write result to LAS file
     fpath_las_out = dir_out + fname + '_change.las'
     print("Writing result to %s" % (fpath_las_out))
+    
+    # add extra dimension
+    pc_ref.add_extra_dim(laspy.ExtraBytesParams(
+        name = "distance",
+        type = np.float32, # np.int32, # "float32",
+        description = "Distance to reference points",
+        offsets = None, # np.array([0.0]),
+        scales = None  # np.array([100.0])
+    ))
+    
+    
+    # las.random = np.random.randint(-1503, 6546, len(las.points), np.int32)
+    pc_ref.distance = np.float32(knn_dist)
+    
+    np.max(pc_ref.distance)
+    
+    # remove COPC VLRS/EVLRS
+    pc_ref.header.vlrs.pop(0)
+    # pc_ref.header.evlrs.pop(0)
+    pc_ref.header.evlrs = []
+    
     las = laspy.LasData(header=pc_ref.header, points=pc_ref.points[idxl_target])
     las.write(fpath_las_out)
+    
 
+
+
+
+
+
+pc3 = laspy.read('D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/LCDF_LV95_NF02_000043.las')
+pc3.write('D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/test_laspy_LCDF_LV95_NF02_000043.las')
+
+
+pc2 = laspy.read(fpath_las_out)
+
+np.min(pc_ref.x)
+np.max(pc_ref.x)
+
+
+np.max(knn_dist)
+np.max(pc_ref.distance)
+np.max(pc2.distance)
 
 #%% rasterize point clouds
 
 tiles = gpd.read_file('D:/Projects/intemperie_cdf_20230724/LIDAR/LAS/tileindex_500m.shp', crs='epsg:2056')
+
 files_in = glob.glob('D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/change_detection/*.las')
 
 del files_in[0] 
@@ -196,6 +275,168 @@ for index, fpath in enumerate(files_in):
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #%% DRAFT
+
+# 1. Create a new header
+header = laspy.LasHeader(pc_ref.header.point_format, pc_ref.header.version)
+header.point_format = pc_ref.header.point_format
+header.version = pc_ref.header.version
+
+
+header = laspy.LasHeader(version=Version(1, 4), point_format=laspy.PointFormat(7))
+
+header = laspy.LasHeader(point_format=7, version="1.4")
+
+
+
+header = laspy.LasHeader(point_format=3, version="1.2")
+header.add_extra_dim(laspy.ExtraBytesParams(name="random", type=np.int32))
+header.offsets = np.min(my_data, axis=0)
+header.scales = np.array([0.1, 0.1, 0.1])
+
+# 2. Create a Las
+las = laspy.LasData(header)
+
+las.x = my_data[:, 0]
+las.y = my_data[:, 1]
+las.z = my_data[:, 2]
+las.random = np.random.randint(-1503, 6546, len(las.points), np.int32)
+
+las.write("new_file.las")
+
+
+
+###########
+
+
+simple_las = "C:/Users/parkanm/Downloads/simple.las"
+
+simple_las = "D:/Projects/intemperie_cdf_20230724/LIDAR/LAS/2022/LCDF_LV95_NF02_000043.las"
+
+las = laspy.read(simple_las)
+
+las.add_extra_dim(
+    laspy.ExtraBytesParams(
+        name="lol", 
+        type="uint64",
+        scales=np.array([2.0]), 
+        offsets=np.array([0.0])
+    )
+)
+
+
+las.add_extra_dim(
+    laspy.ExtraBytesParams(
+        name = "mydistance",
+        type = "float32",
+        description = "Distance to nearest neighbour",
+        offsets = None,
+        scales = None
+    )
+)
+
+
+new_values = np.ones(len(las.points)) * 4
+las.lol = new_values   
+
+
+
+
+
+
+
+
+    
+    
+    
+
+pc_ref = laspy.read(fpath_ref)
+
+pc_out = laspy.LasData(pc_ref.header)
+pc_out.header.add_extra_dim(laspy.ExtraBytesParams(name="random", type=np.int32))
+
+pc_out.points = pc_ref.points
+
+pc_out.random = np.random.randint(-1503, 6546, len(pc_out.points), np.int32)
+
+
+
+
+fmt = pc_ref.header.point_format
+
+
+pc_ref = laspy.read(fpath_ref)
+    
+pc_ref.header.add_extra_dim(laspy.ExtraBytesParams(name="random", type=np.float32))
+
+dd = np.float32(np.random.uniform(low=0.0, high=50, size=len(pc_ref.points)))
+
+pc_ref.random = np.float32(np.random.uniform(low=0.0, high=50, size=len(pc_ref.points)))
+
+
+
+
+pc_ref = laspy.read(fpath_ref)
+
+pc_ref.header.add_extra_dim(laspy.ExtraBytesParams(name="bibi", type=np.int32))
+
+
+
+pc_ref.bibi = np.random.randint(0, 6546, len(pc_ref.points), np.int32)
+
+pc_ref.points.extra_dims
+pc_ref.points
+
+
+
+
+# fmt = laspy.PointFormat(6)
+fmt = pc_ref.header.point_format
+standard_dims = list(fmt.standard_dimensions)
+extra_dims = list(fmt.extra_dimension_names)
+
+dim = fmt.dimension_by_name("classification")
+fmt.add_extra_dimension(laspy.ExtraBytesParams("distance", "float32"))
+
+dim = fmt.dimension_by_name("distance")
+fmt.num_standard_bytes
+fmt.num_extra_bytes
+
+
+
+
+
+pc.header
+
+
+# 0. Creating some dummy data
+my_data_xx, my_data_yy = np.meshgrid(np.linspace(-20, 20, 15), np.linspace(-20, 20, 15))
+my_data_zz = my_data_xx ** 2 + 0.25 * my_data_yy ** 2
+my_data = np.hstack((my_data_xx.reshape((-1, 1)), my_data_yy.reshape((-1, 1)), my_data_zz.reshape((-1, 1))))
+
+# 1. Create a new header
+header = laspy.LasHeader(point_format=3, version="1.2")
+header.add_extra_dim(laspy.ExtraBytesParams(name="random", type=np.int32))
+header.offsets = np.min(my_data, axis=0)
+header.scales = np.array([0.1, 0.1, 0.1])
+
+# 2. Create a Las
+las = laspy.LasData(header)
+
+las.x = my_data[:, 0]
+las.y = my_data[:, 1]
+las.z = my_data[:, 2]
+las.random = np.random.randint(-1503, 6546, len(las.points), np.int32)
+
+las.write("new_file.las")
+
+
+
+
+
+
+
+
+
 
 
 # leafsize=3, build=19s, query= 115s
