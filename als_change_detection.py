@@ -26,6 +26,7 @@ import faiss
 import rasterio
 from rasterio.transform import Affine
 import pykdtree.kdtree as pykdt
+
 # from sklearn.neighbors import KDTree
 # import cv2 as cv
 # import matplotlib.pyplot as plt
@@ -35,22 +36,27 @@ import pykdtree.kdtree as pykdt
 #%% parameters
 
 # directories/files
-# tile_index = 'D:/Projects/intemperie_cdf_20230724/LIDAR/LAS/tileindex_500m.shp'
+# tile_index_ref = 'D:/Projects/intemperie_cdf_20230724/LIDAR/LAS/tileindex_500m.shp'
 # dir_in = 'D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/corrected/*.las'
 # dir_ref_in = 'D:/Projects/intemperie_cdf_20230724/LIDAR/LAS/2022/'
 # dir_out = 'D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/change_detection/'
 
 
 # directories/files
-tile_index = 'D:/Projects/intemperie_cdf_20230724/grid/tuiles_lidar_2022.shp'
-dir_in = 'D:/Projects/intemperie_cdf_20230724/data/pointclouds/Flight_1_Geospatial_predict_all_classes_Flai_v2/*.laz'
-dir_ref_in = 'D:/Data/LiDAR/2022/'
-dir_out = 'D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/change_detection/v2/'
+# tile_index_ref = 'D:/Projects/intemperie_cdf_20230724/grid/tuiles_lidar_2022.shp'
+# dir_in = 'D:/Projects/intemperie_cdf_20230724/data/pointclouds/Flight_1_Geospatial_predict_all_classes_Flai_v2/*.laz'
+# dir_ref_in = 'D:/Data/LiDAR/2022/'
+# dir_out = 'D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/change_detection/v2/'
+
+
+tile_index_ref = 'D:/Data/pointclouds/2022/ALS_NE_COPC_2022/tuiles_lidar_2022.shp'
+dir_in = 'D:/Data/pointclouds/2023/all/merged/*.las'
+dir_ref_in = 'D:/Data/pointclouds/2022/ALS_NE_COPC_2022/' # 'D:/Data/pointclouds/2022/all/*.laz'
+dir_out = 'D:/Projects/intemperie_cdf_20230724/difference_2023_2022/change_analysis/'
 
 # processing
 target_classes = [2,3,4,5,31]
 d_max = 1.5
-
 
 
 # pc1 = laspy.read('D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/change_detection/v2/2545000_1211500_change.las')
@@ -62,7 +68,6 @@ d_max = 1.5
 
 
 #%% change detection in point cloud
-
 
 files_in = glob.glob(dir_in)
 
@@ -77,7 +82,7 @@ files_in = glob.glob(dir_in)
 n = len(files_in)
 
 # tiles_s = gpd.overlay(tiles, clipper, how='intersection', keep_geom_type=None, make_valid=True)
-tiles = gpd.read_file(tile_index, crs='epsg:2056')
+tiles = gpd.read_file(tile_index_ref, crs='epsg:2056')
     
 for index, fpath in enumerate(files_in):
 
@@ -167,9 +172,6 @@ for index, fpath in enumerate(files_in):
 
 
 
-
-
-
 pc3 = laspy.read('D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/LCDF_LV95_NF02_000043.las')
 pc3.write('D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/test_laspy_LCDF_LV95_NF02_000043.las')
 
@@ -184,16 +186,49 @@ np.max(knn_dist)
 np.max(pc_ref.distance)
 np.max(pc2.distance)
 
+
 #%% rasterize point clouds
 
-tiles = gpd.read_file('D:/Projects/intemperie_cdf_20230724/LIDAR/LAS/tileindex_500m.shp', crs='epsg:2056')
+# tiles = gpd.read_file('D:/Projects/intemperie_cdf_20230724/LIDAR/LAS/tileindex_500m.shp', crs='epsg:2056')
+# files_in = glob.glob('D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/change_detection/*.las')
 
-files_in = glob.glob('D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/change_detection/*.las')
 
-del files_in[0] 
+tiles = gpd.read_file('D:/Data/pointclouds/2022/ALS_NE_COPC_2022/tuiles_lidar_2022.shp', crs='epsg:2056')
+files_in = glob.glob('D:/Projects/intemperie_cdf_20230724/difference_2023_2022/change_analysis/*.las')
+dir_out = "D:/Projects/intemperie_cdf_20230724/difference_2023_2022/change_analysis/raster/"
+mask_path = "D:/Projects/intemperie_cdf_20230724/difference_2023_2022/change_analysis/coverage/perimetre_vol_complet_mn95.shp"
+res = 1
+d_max = 1.5
 
+# del files_in[0] 
 # fpath = 'D:/Projects/intemperie_cdf_20230724/LIDAR/terrascan_project/change_detection/LCDF_LV95_NF02_000011_change.las'
 
+
+#%% polygon 
+    
+#  boundary polygon
+x_poly, y_poly = geometry.exterior.coords.xy
+boundary = np.dstack([x_poly, y_poly])[0].tolist()
+    
+# create boundary polygon
+path_p = matplotlib.path.Path(boundary)
+    
+
+clipper = gpd.read_file(mask_path)
+
+# plot convex hull
+clipper.geometry[0]
+
+x_poly, y_poly = clipper.geometry[0].exterior.coords.xy
+# boundary = xy_chull.tolist()
+boundary = np.dstack([x_poly, y_poly])[0].tolist()
+
+# create boundary polygon
+path_p = matplotlib.path.Path(boundary)
+
+    
+#%%
+ 
 n = len(files_in)
 
 for index, fpath in enumerate(files_in):
@@ -225,14 +260,30 @@ for index, fpath in enumerate(files_in):
     y_max = bbox.maxy.values[0]
     
     # create raster grid
-    res = 1
+    # res = 1
     xe = np.arange(x_min, x_max + res, res)
     ye = np.arange(y_min, y_max + res, res)
     transform_edges = Affine.translation(xe[0], ye[-1]) * Affine.scale(res, -res)
 
     # rasterize
-    idxl_change = pc.user_data == 1
-    ret = stats.binned_statistic_2d(pc.x[idxl_change], pc.y[idxl_change], None, statistic='count', bins = [xe, ye], expand_binnumbers=True)
+    # idxl_change = pc.user_data == 1
+    idxl_change = (pc.distance > d_max) & np.isin(pc.classification, [4,5])
+    # idxn_change = np.nonzero(idxl_change)
+    # idxn_change = np.where(idxl_change)
+    idxn_change = np.asarray(idxl_change.nonzero())[0]
+
+    # np.sum(idxl_change)
+    
+    # apply mask
+    idxl_mask = path_p.contains_points(np.stack([pc.x[idxl_change], pc.y[idxl_change]], axis=0).transpose((1, 0)))
+    idxn = idxn_change[idxl_mask]
+    
+    if len(idxn) == 0:
+        print("No points in mask, skipping to next iteration")
+        continue
+    
+    
+    ret = stats.binned_statistic_2d(pc.x[idxn], pc.y[idxn], None, statistic='count', bins = [xe, ye], expand_binnumbers=True)
     npoints = np.uint32(np.rot90(ret.statistic)) > 20
     # mask = npoints.astype(np.uint8)
 
