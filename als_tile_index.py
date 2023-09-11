@@ -52,11 +52,28 @@ import glob
 # path_out = 'D:/Data/LiDAR/2023 - CDF/flai_classification_v1/corrected/LCDF_LV95_NF02_tile_index.shp'
 
 
-path_in = 'D:/Projects/intemperie_cdf_20230724/data/pointclouds/Flight_1_Geospatial_predict_all_classes_Flai_v2/*.laz'
-path_out = 'D:/Projects/intemperie_cdf_20230724/data/pointclouds/Flight_1_Geospatial_predict_all_classes_Flai_v2/tile_index.shp'
+# path_in = 'D:/Projects/intemperie_cdf_20230724/data/pointclouds/Flight_1_Geospatial_predict_all_classes_Flai_v2/*.laz'
+# path_out = 'D:/Projects/intemperie_cdf_20230724/data/pointclouds/Flight_1_Geospatial_predict_all_classes_Flai_v2/tile_index.shp'
 
 
-#%% input files
+#path_in = '\\\\nesitn5/h$/geodata/pointclouds/Aeriallidar/Lidar2023_CHXFDS/2_las/2_laz/2_laz_helimap_v2/*.laz'
+#path_out = '\\\\nesitn5/h$/geodata/pointclouds/Aeriallidar/Lidar2023_CHXFDS/2_las/2_laz/2_laz_helimap_v2/tile_index.shp'
+
+
+#path_in = '\\\\nesitn5/h$/geodata/pointclouds/Aeriallidar/Lidar2023_CHXFDS/2_las/vol2/2_laz_helimap/*.laz'
+#path_out = '\\\\nesitn5/h$/geodata/pointclouds/Aeriallidar/Lidar2023_CHXFDS/2_las/vol2/2_laz_helimap/tile_index.shp'
+
+path_in = 'D:/Data/pointclouds/2023/all/flight_1/*.las'
+path_out = 'D:/Data/pointclouds/2023/all/flight_1/tile_index.shp'
+
+path_in = 'D:/Data/pointclouds/2023/all/flight_2/*.laz'
+path_out = 'D:/Data/pointclouds/2023/all/flight_2/tile_index.shp'
+
+path_in = 'D:/Data/pointclouds/2023/all/merged/*.las'
+path_out = 'D:/Data/pointclouds/2023/all/merged/tile_index.shp'
+
+
+#%% input files   
 
 files_in = glob.glob(path_in)
 
@@ -70,7 +87,8 @@ for index, fpath in enumerate(files_in):
     print("Processing file %u / %u: %s" % (index+1, n, fpath))
     
     try:
-      pc = laspy.read(fpath)
+      # pc = laspy.read(fpath)
+      pc = laspy.open(fpath) # faster to read header only
     except:
       print("Error when reading file. Skipping to next.")
       continue
