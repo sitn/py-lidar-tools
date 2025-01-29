@@ -2,3 +2,5 @@ draft/
 data/
 venv/
 data/
+scripts/experimental/
+scripts/general/__pycache__
