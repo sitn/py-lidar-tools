@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Author: Matthew Parkan
-Description: Creates a raster tile set from a vector tile grid and raster source
+Author: Matthew Parkan, SITN
+Description: Creates a raster tile set from a vector tile index and raster source directory
 Last revision: January 23, 2025
 Licence: BSD 3-Clause License 
 """
@@ -19,13 +19,11 @@ from utilities.utilities import get_filepath
 
 dir_in = 'D:/Data/images/2022/RGBI/' # Path to input directory (containing geotiff raster files with .tif extension)
 dir_out = 'D:/Data/images/2022/RGBI_BUFFERED/' # Path to output directory
-
 suffix_out = '_20cm_rgbi_buffered' # Suffix added to output files
 
-# Path to the the source extent file. The source extent index must be a shapefile 
-# with a geometry column containing the extent of each file and a tileid column with the name of each raster file
-fpath_tile_index = 'D:/Data/pointclouds/2022/tiles/tile_index_lidar_2022_local.shp'
-tile_identifier = 'tileid' # column name sed to uniquely identify a tile in the tile index
+
+fpath_tile_index = 'D:/Data/pointclouds/2022/tiles/tile_index_lidar_2022_local.shp' # Path to the source extent file with a geometry column containing the extent of each tile and a column with an identifier for each raster file
+tile_identifier = 'tileid' # Column name used to uniquely identify a tile in the tile index
 
 crs = 'EPSG:2056' # Coordinate reference system
 buffer_width = 20 # Width of the buffer to apply around each tile (set to 0, if you do not want a buffer)
