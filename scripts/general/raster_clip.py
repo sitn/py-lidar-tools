@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Author: Matthew Parkan
+Author: Matthew Parkan, SITN
 Description: clips and merges subsets of rasters
 Last revision: January 23, 2025
 Licence: BSD 3-Clause License 
@@ -9,6 +9,8 @@ Licence: BSD 3-Clause License
 import numpy as np
 import geopandas as gpd
 import rasterio
+
+#%% Functions
 
 def raster_clip(clipper_extent, 
                source_extent,
