@@ -9,11 +9,6 @@ This applications requires:
 ## Setup
 Open a terminal in the root directory.
 
-Move to back folder:
-```
-cd .\back\
-```
-
 1. Create a new virtual environment and activate it.
 
 ```
