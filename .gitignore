@@ -3,4 +3,6 @@ data/
 venv/
 data/
 scripts/experimental/
-scripts/general/__pycache__
+scripts/general/__pycache__/
+scripts/vegetation/__pycache__/
+scripts/utilities/__pycache__/
