@@ -66,14 +66,24 @@ for index, tile in tiles.iterrows():
     
     try:
         
-        if index == 0:
-            gdf_all = gpd.read_file(tile.filepath)
-
-        tile_bbox = np.asarray(tile.geometry.bounds)
-        gdf = gpd.read_file(tile.filepath)
+        match extension:
+            
+            case ".feather":
+                if index == 0:
+                    gdf_all = gpd.read_feather(tile.filepath)
+                else:
+                    gdf = gpd.read_feather(tile.filepath)
+                
+            case ".shp":
+                if index == 0:
+                    gdf_all = gpd.read_file(tile.filepath)
+                else: 
+                    gdf = gpd.read_file(tile.filepath)
+        
         coords = gdf.get_coordinates(include_z=True, ignore_index=False, index_parts=False)
         
         # Remove points located outside the tile bounding box
+        tile_bbox = np.asarray(tile.geometry.bounds)
         idxl_inside_bbox = (coords.x > tile_bbox[0]) & (coords.x < tile_bbox[2]) & (coords.y > tile_bbox[1]) & (coords.y < tile_bbox[3])
         idxl_on_bbox = np.isin(coords.x, tile_bbox[[0,2]]) | np.isin(coords.y, tile_bbox[[1,3]])
         idxl_filter = idxl_inside_bbox | idxl_on_bbox
@@ -94,7 +104,7 @@ print(f"{current_time} Finished merging - Elapsed time {toc - tic:0.4f} seconds"
 
 tic = time.perf_counter()
 
-print(f"Writing to {fpath_out}")
+print(f"Writing data to {fpath_out}")
 match extension:
     case ".feather":
         gdf_all.to_feather(path=fpath_out, index=True)
