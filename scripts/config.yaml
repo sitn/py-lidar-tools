@@ -3,15 +3,13 @@ tile_index:
   fpath: "D:/Data/pointclouds/2022/tiles/tile_index_lidar_2022_local.shp" # Path to the source extent file with a geometry column containing the extent of each tile and a column with an identifier for each raster file
   identifier: "tileid" # Column name used to uniquely identify a tile in the tile index
 
-
 # Raster tiling parameters
 raster_tiling:
-  dir_in: "D:/Data/images/2022/RGBI/" # Path to input directory (containing geotiff raster files with .tif extension)
-  dir_out: "D:/Data/images/2022/RGBI_BUFFERED/" # Path to output directory
-  suffix_out: "_20cm_rgbi_buffered" # Suffix added to output files
+  dir_in: "D:/Data/images/2022/CHM/" # Path to input directory (containing geotiff raster files with .tif extension)
+  dir_out: "D:/Data/images/2022/CHM_BUFFERED/" # Path to output directory
+  suffix_out: "_20cm_chm_buffered" # Suffix added to output files
   crs: "EPSG:2056" # Coordinate reference system
   buffer_width: 20.0 # Width of the buffer (in maps units) to apply around each tile (set to 0, if you do not want a buffer)
-
 
 # Tree top detection parameters
 tree_top_detection:
@@ -25,4 +23,8 @@ tree_top_detection:
   min_height: 2.0 # Minimum tree top height, see canopy_peaks.py for details
   verbose: True # Switch to print additional info in console
   fig: False # Switch to plot figures
-  
+
+# Vector file merging parameters
+vector_file_merging:
+  fpath_in: "D:/Data/treetops/20250129/*.feather" # Wildcard path to all files in the input directory (containing the vector files with the detected trees)
+  fpath_out: "D:/Data/treetops/20250129/tree_tops_merged.feather"  # Path to merged file (extension should be either .shp or .feather)
