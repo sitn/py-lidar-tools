@@ -5,7 +5,7 @@ from skimage.morphology import reconstruction
 import matplotlib.pyplot as plt
 import rasterio
 
-def canopy_peaks(chm, transform, smoothing_filter=None, method='default', 
+def canopy_peaks(chm, transform, gaussian_filter_sigma=None, method='default', 
                  min_tree_height=2, search_radius=lambda h: 1, 
                  min_height_difference=0.1, fig=False, verbose=False):
 
@@ -38,7 +38,7 @@ def canopy_peaks(chm, transform, smoothing_filter=None, method='default',
     
     - transform - affine transform object (from rasterio), mapping between image and map coordinates
     
-    - sigma - scalar (optional, default: None), standard deviation for the Gaussian kernel used to smooth the CHM
+    - gaussian_filter_sigma - scalar (optional, default: None), standard deviation for the Gaussian kernel used to smooth the CHM
     
     - method: 'default' or 'hMaxima' (default: 'default'), peak detection method
     
@@ -79,18 +79,17 @@ def canopy_peaks(chm, transform, smoothing_filter=None, method='default',
     )
 
     
-    Author: Matthew Parkan
-    Last revision: October 21, 2024
-    Licence: GNU General Public Licence (GPL), see https://www.gnu.org/licenses/gpl.html for details
+    Author: Matthew Parkan, SITN
+    Last revision: Janjuary 31, 2025
+    Licence: BSD 3-Clause License
     '''
     
     # Smoothing the CHM (if applicable)
-    if smoothing_filter is not None:
+    if gaussian_filter_sigma is not None:
         if verbose:
             print("Smoothing CHM...")
-        chm = gaussian_filter(chm, smoothing_filter)
-        if verbose:
-            print("Done!")
+        chm = gaussian_filter(chm, gaussian_filter_sigma)
+
 
     # Pre-process CHM
     chm[chm < 0] = 0
@@ -104,7 +103,7 @@ def canopy_peaks(chm, transform, smoothing_filter=None, method='default',
     nrows, ncols = chm.shape
     transformer = rasterio.transform.AffineTransformer(transform)
     
-    if method == 'default':
+    if method == "default":
         # Default method: search for peaks using a variable-sized window based on tree height
         crown_radius = np.vectorize(search_radius)(chm)
         grid_resolution = abs(transform[0])  # Pixel size in x direction
@@ -125,11 +124,11 @@ def canopy_peaks(chm, transform, smoothing_filter=None, method='default',
         row_lm, col_lm = np.where(idxl_lm)
         h_lm = chm[row_lm, col_lm]
     
-    elif method == 'hMaxima':
+    elif method == "hMaxima":
         # H-Maxima transform method
         h_min = chm - min_height_difference
         h_min[h_min < 0] = 0
-        h_maxima = reconstruction(h_min, chm, method='dilation')
+        h_maxima = reconstruction(h_min, chm, method="dilation")
         local_max = (chm - h_maxima) >= min_height_difference
         row_lm, col_lm = np.where(local_max)
         h_lm = chm[row_lm, col_lm]
@@ -138,7 +137,6 @@ def canopy_peaks(chm, transform, smoothing_filter=None, method='default',
     if verbose:
         print("Transforming to map coordinates...")
     
-    # xy = np.array([xy(transform, r, c) for r, c in zip(row_lm, col_lm)])
     xy = np.column_stack(transformer.xy(row_lm, col_lm))
     
     # Combine image coordinates with heights
@@ -160,15 +158,13 @@ def canopy_peaks(chm, transform, smoothing_filter=None, method='default',
     
     # Optionally, plot the results
     if fig:
-        plt.imshow(chm, cmap='gray')
-        plt.plot(crh[:, 0], crh[:, 1], 'rx', markersize=3)
+        plt.imshow(chm, cmap="gray")
+        plt.plot(crh[:, 0], crh[:, 1], "rx", markersize=3)
         plt.colorbar()
-        plt.title('Detected Tree Tops')
-        plt.xlabel('Column')
-        plt.ylabel('Row')
+        plt.title("Detected Tree Tops")
+        plt.xlabel("Column")
+        plt.ylabel("Row")
         plt.show()
     
-    if verbose:
-        print("Done!")
     
     return crh, xyh
