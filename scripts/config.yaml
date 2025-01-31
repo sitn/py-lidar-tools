@@ -13,13 +13,16 @@ raster_tiling:
   buffer_width: 20.0 # Width of the buffer (in maps units) to apply around each tile (set to 0, if you do not want a buffer)
 
 
+# Tree top detection parameters
 tree_top_detection:
   dir_in_chm: "D:/Data/images/2022/CHM_BUFFERED/" # Path to input directory (containing geotiff raster files with .tif extension)
   dir_out: "D:/Data/treetops/20250129/" # Path to output directory
   suffix_out: "_tree_tops" # Suffix added to output files
   export_shapefile: True # Export detected tree tops to shapefile
   export_feather: True # Export detected tree tops to feather file
-  radius_function: "lambda h: 0.28 * h**0.59"
-  min_height: 2.0
-  verbose: True
-  fig: False
+  radius_function: "lambda h: 0.28 * h**0.59" # Lambda function specifying the radius (as a function of height) for the maxima detection window, see canopy_peaks.py for details
+  gaussian_filter_sigma: 1.0 # Standard deviation for the Gaussian kernel used to smooth the CHM, see canopy_peaks.py for details
+  min_height: 2.0 # Minimum tree top height, see canopy_peaks.py for details
+  verbose: True # Switch to print additional info in console
+  fig: False # Switch to plot figures
+  
