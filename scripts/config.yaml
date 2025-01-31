@@ -1,4 +1,4 @@
-# Common parameters
+# Tile index parameters
 tile_index:
   fpath: "D:/Data/pointclouds/2022/tiles/tile_index_lidar_2022_local.shp" # Path to the source extent file with a geometry column containing the extent of each tile and a column with an identifier for each raster file
   identifier: "tileid" # Column name used to uniquely identify a tile in the tile index

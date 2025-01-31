@@ -34,8 +34,8 @@ dir_in = params["raster_tiling"]["dir_in"] # Path to input directory (containing
 dir_out =  params["raster_tiling"]["dir_out"]  # Path to output directory
 suffix_out = params["raster_tiling"]["suffix_out"] # Suffix added to output files
 
-fpath_tile_index = params["common"]["fpath_tile_index"] # Path to the source extent file with a geometry column containing the extent of each tile and a column with an identifier for each raster file
-tile_identifier = params['common']["tile_identifier"] # Column name used to uniquely identify a tile in the tile index
+fpath_tile_index = params["tile_index"]["fpath"] # Path to the source extent file with a geometry column containing the extent of each tile and a column with an identifier for each raster file
+tile_identifier = params['tile_index']["identifier"] # Column name used to uniquely identify a tile in the tile index
 
 crs = params["raster_tiling"]["crs"] # Coordinate reference system
 buffer_width = params["raster_tiling"]["buffer_width"] # Width of the buffer to apply around each tile (set to 0, if you do not want a buffer)
