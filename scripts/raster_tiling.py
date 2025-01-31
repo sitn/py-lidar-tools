@@ -7,17 +7,15 @@ Licence: BSD 3-Clause License
 """
 
 import os
+import glob
 import yaml
 import time
 import geopandas as gpd
 import rasterio
-import glob
-
 # Set PROJ_LIB and GDAL_DATA dynamically (to use GDAL install linked to rasterio  package instead of GDAL in system path)
 RASTERIO_PATH = os.path.dirname(rasterio.__file__)
 os.environ["PROJ_LIB"] = os.path.join(RASTERIO_PATH, "proj_data")
 os.environ["GDAL_DATA"] = os.path.join(RASTERIO_PATH, "gdal_data")
-
 from datetime import datetime
 from general.raster_clip import raster_clip
 from utilities.utilities import get_filepath
@@ -27,13 +25,10 @@ print(f'PROJ_LIB: {os.environ.get("PROJ_LIB")}')
 print(f'GDAL_DATA: {os.environ.get("GDAL_DATA")}')
 
 
-#%% Load configuration
+#%% Parameters
 
 with open("config.yaml", "r") as file:
     params = yaml.safe_load(file)
-
-
-#%% Parameters
 
 dir_in = params["raster_tiling"]["dir_in"] # Path to input directory (containing geotiff raster files with .tif extension)
 dir_out =  params["raster_tiling"]["dir_out"]  # Path to output directory
