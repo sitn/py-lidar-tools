@@ -1,7 +1,7 @@
 # Common parameters
-common:
-  fpath_tile_index: "D:/Data/pointclouds/2022/tiles/tile_index_lidar_2022_local.shp" # Path to the source extent file with a geometry column containing the extent of each tile and a column with an identifier for each raster file
-  tile_identifier: "tileid" # Column name used to uniquely identify a tile in the tile index
+tile_index:
+  fpath: "D:/Data/pointclouds/2022/tiles/tile_index_lidar_2022_local.shp" # Path to the source extent file with a geometry column containing the extent of each tile and a column with an identifier for each raster file
+  identifier: "tileid" # Column name used to uniquely identify a tile in the tile index
 
 
 # Raster tiling parameters
@@ -12,3 +12,14 @@ raster_tiling:
   crs: "EPSG:2056" # Coordinate reference system
   buffer_width: 20.0 # Width of the buffer (in maps units) to apply around each tile (set to 0, if you do not want a buffer)
 
+
+tree_top_detection:
+  dir_in_chm: "D:/Data/images/2022/CHM_BUFFERED/" # Path to input directory (containing geotiff raster files with .tif extension)
+  dir_out: "D:/Data/treetops/20250129/" # Path to output directory
+  suffix_out: "_tree_tops" # Suffix added to output files
+  export_shapefile: True # Export detected tree tops to shapefile
+  export_feather: True # Export detected tree tops to feather file
+  radius_function: "lambda h: 0.28 * h**0.59"
+  min_height: 2.0
+  verbose: True
+  fig: False
