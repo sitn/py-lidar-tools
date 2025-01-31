@@ -43,7 +43,7 @@ This creates a `venv` folder inside the project directory.
    .\venv\Scripts\activate
    ```
 
-7. Install the depenencies:
+7. Install the dependencies:
 
    ```
    pip install -r requirements.txt
@@ -68,7 +68,6 @@ This creates a `venv` folder inside the project directory.
 1. Run `raster_tiling.py` to create a set of raster tiles with overlap (to avoid edge effects)
 2. Run `detect_tree_tops.py` to detect the tree tops from the canopy height model tiles
 3. Run `merge_` to merge the results into a single file
-
 
 ## Overview
 
