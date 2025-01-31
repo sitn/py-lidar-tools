@@ -59,15 +59,15 @@ This creates a `venv` folder inside the project directory.
 
 2. Open the `config.yaml` file and adjust the parameters as needed.
 
-3. Run the scripts according to the desired workflow
+3. Run the scripts according to the desired workflow (see below).
 
 ## Worflows
 
 ### Tree top detection
 
-1. Run `raster_tiling.py` to create a set of raster tiles with overlap (to avoid edge effects)
-2. Run `detect_tree_tops.py` to detect the tree tops from the canopy height model tiles
-3. Run `merge_` to merge the results into a single file
+1. Run `raster_tiling.py` to create a set of buffered raster tiles with overlap (to avoid edge effects)
+2. Run `detect_tree_tops.py` to detect the tree tops from the buffered canopy height model tiles
+3. Run `merge_vector_files.py` to merge the tiled tree_top files into a single file
 
 ## Overview
 
