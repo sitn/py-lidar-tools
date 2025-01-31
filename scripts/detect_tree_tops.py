@@ -31,21 +31,22 @@ with open("config.yaml", "r") as file:
     params = yaml.safe_load(file)
 
 
-dir_in_chm = params["tree_top_detection"]["dir_in_chm"] # 'D:/Data/images/2022/CHM_BUFFERED/' # Path to input directory (containing geotiff raster files with .tif extension)
-dir_out = params["tree_top_detection"]["dir_out"]  # 'D:/Data/treetops/20250129/' # Path to output directory
-suffix_out = params["tree_top_detection"]["suffix_out"]  # '_tree_tops' # Suffix added to output files
+dir_in_chm = params["tree_top_detection"]["dir_in_chm"] # Path to input directory (containing geotiff raster files with .tif extension)
+dir_out = params["tree_top_detection"]["dir_out"] # Path to output directory
+suffix_out = params["tree_top_detection"]["suffix_out"] # Suffix added to output files
 
 fpath_tile_index = params["tile_index"]["fpath"] # Path to the source extent file with a geometry column containing the extent of each tile and a column with an identifier for each raster file
 tile_identifier = params["tile_index"]["identifier"] # Column name used to uniquely identify a tile in the tile index
 
-export_shapefile = params["tree_top_detection"]["export_shapefile"]  # True # Export detected tree tops to shapefile
-export_feather = params["tree_top_detection"]["export_feather"] # True # Export detected tree tops to feather file
+export_shapefile = params["tree_top_detection"]["export_shapefile"] # Export detected tree tops to shapefile
+export_feather = params["tree_top_detection"]["export_feather"] # Export detected tree tops to feather file
 
-radius_function =  eval(params["tree_top_detection"]["radius_function"]) # lambda h: 0.28 * h**0.59
-min_height = params["tree_top_detection"]["min_height"] # 2
+radius_function = eval(params["tree_top_detection"]["radius_function"])
+min_height = params["tree_top_detection"]["min_height"] 
+gaussian_filter_sigma = params["tree_top_detection"]["gaussian_filter_sigma"]
 
-verbose = params["tree_top_detection"]["verbose"] # True
-fig = params["tree_top_detection"]["fig"] # False
+verbose = params["tree_top_detection"]["verbose"]
+fig = params["tree_top_detection"]["fig"]
 
 
 #%% Read tile index
@@ -92,7 +93,7 @@ for index, tile in tiles.iterrows():
         crh, xyh = canopy_peaks(
             chm,
             src_transform,
-            smoothing_filter=1,
+            gaussian_filter_sigma=gaussian_filter_sigma,
             method="default",      
             min_tree_height=min_height,   
             search_radius=radius_function, 
