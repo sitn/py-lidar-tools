@@ -17,7 +17,6 @@ import pandas as pd
 from datetime import datetime
 import concurrent.futures
 
-
 print(f'CPU Count: {os.cpu_count()}')
 
 # Set PROJ_LIB and GDAL_DATA dynamically (to use GDAL install linked to rasterio  package instead of GDAL in system path)
@@ -30,12 +29,10 @@ def init_worker():
 from utilities.utilities import get_filepath
 from vegetation.canopy_peaks import canopy_peaks
 
-
 #%% Parameters
 
 with open("config.yaml", "r") as file:
     params = yaml.safe_load(file)
-
 
 dir_in_chm = params["tree_top_detection"]["dir_in_chm"]  # Directory containing input CHM .tif files
 dir_out = params["tree_top_detection"]["dir_out"]  # Output directory
@@ -59,14 +56,12 @@ max_workers = params["parallel_processing"]["max_workers"]
 tiles = gpd.read_file(fpath_tile_index)
 n_tiles = len(tiles)
 
-
 #%% Add filepath column to tile index
 
 files_in = glob.glob(os.path.join(dir_in_chm, "*.tif"))
 tiles["filepath"] = tiles[tile_identifier].apply(lambda x: get_filepath(files_in, x))
 
-
-#%% Define the per-tile processing function
+#%% Process tile function
 
 def process_tile(args):
 
@@ -143,4 +138,5 @@ if __name__ == "__main__":
     tiles_list = list(tiles.iterrows())
 
     with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers, initializer=init_worker) as executor:
+        # Return results in order of task submission 
         executor.map(process_tile, tiles_list)
