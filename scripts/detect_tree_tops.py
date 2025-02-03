@@ -73,7 +73,6 @@ for index, tile in tiles.iterrows():
         tic = time.perf_counter()
 
         # Read canopy height model
-        # fpath_chm = get_filepath(files_chm_in, tile.tileid)
         src = rasterio.open(tile.filepath)
         src_transform = src.transform
         src_crs = src.crs
