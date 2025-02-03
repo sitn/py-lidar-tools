@@ -9,8 +9,8 @@ tile_index:
 
 # Raster tiling parameters
 raster_tiling:
-  dir_in: "D:/Data/images/2022/CHM/" # Path to input directory (containing geotiff raster files with .tif extension)
-  dir_out: "D:/Data/images/2022/CHM_BUFFERED/" # Path to output directory
+  dir_in: "D:/Data/images/CHM/" # Path to input directory (containing geotiff raster files with .tif extension)
+  dir_out: "D:/Data/images/CHM_BUFFERED/" # Path to output directory
   suffix_out: "_20cm_chm_buffered" # Suffix added to output files
   crs: "EPSG:2056" # Coordinate reference system
   buffer_width: 20.0 # Width of the buffer (in maps units) to apply around each tile (set to 0, if you do not want a buffer)
