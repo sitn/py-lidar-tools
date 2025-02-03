@@ -1,3 +1,7 @@
+# Parallel processing
+parallel_processing:
+  max_workers: 8
+
 # Tile index parameters
 tile_index:
   fpath: "D:/Data/pointclouds/2022/tiles/tile_index_lidar_2022_local.shp" # Path to the source extent file with a geometry column containing the extent of each tile and a column with an identifier for each raster file
@@ -28,3 +32,4 @@ tree_top_detection:
 vector_file_merging:
   fpath_in: "D:/Data/treetops/20250129/*.feather" # Wildcard path to all files in the input directory (containing the vector files with the detected trees)
   fpath_out: "D:/Data/treetops/20250129/tree_tops_merged.feather"  # Path to merged file (extension should be either .shp or .feather)
+
